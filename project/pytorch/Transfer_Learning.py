@@ -182,7 +182,7 @@ def run():
     plt.ioff()
     plt.show()
     
-    # 
+    # 모델 저장
     torch.save(model_conv, 'fruits_model.pt')
     torch.save(model_conv.state_dict(), 'fruits_model_state_dict.pt')
     torch.save({
