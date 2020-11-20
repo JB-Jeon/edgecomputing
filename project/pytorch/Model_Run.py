@@ -5,6 +5,8 @@ from torchvision import datasets, models, transforms
 import os
 import time
 
+# 예측 모델을 기준으로 분류만 수행하여 예측 결과를 출력하는 코드
+
 data_transforms = {
     'train': transforms.Compose([
         transforms.RandomResizedCrop(224),
