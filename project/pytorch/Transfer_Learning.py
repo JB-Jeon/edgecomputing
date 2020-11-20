@@ -13,6 +13,8 @@ import os
 import copy
 
 plt.ion()   # 대화형 모드
+
+# 사진을 무작위로 잘라서 학습용으로 사용
 data_transforms = {
     'train': transforms.Compose([
         transforms.RandomResizedCrop(224),
@@ -20,6 +22,7 @@ data_transforms = {
         transforms.ToTensor(),
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     ]),
+# 사진 크기를 조절하고, 중앙값만 잘라서 검증에 사용
     'val': transforms.Compose([
         transforms.Resize(256),
         transforms.CenterCrop(224),
@@ -28,7 +31,9 @@ data_transforms = {
     ]),
 }
 
-data_dir = 'data'
+data_dir = 'data' # 사진들이 있는 경로(train, val 폴더가 안에 있어야 함)
+                  # train, val에는 각각 과일명을 가진 폴더와 사진들이 있어야 한다.
+                  # 폴더명은 Label로 쓰인다.
 image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x),
                                           data_transforms[x])
                   for x in ['train', 'val']}
@@ -40,6 +45,7 @@ class_names = image_datasets['train'].classes
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
+# plt 사진 출력
 def imshow(inp, title=None):
     """Imshow for Tensor."""
     inp = inp.numpy().transpose((1, 2, 0))
@@ -52,6 +58,7 @@ def imshow(inp, title=None):
         plt.title(title)
     plt.pause(0.001)  # 갱신이 될 때까지 잠시 기다립니다.
 
+# 모델 학습
 def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
     since = time.time()
 
@@ -120,7 +127,8 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
     model.load_state_dict(best_model_wts)
     return model
 
-def visualize_model(model, num_images=6):
+# 모델을 바탕으로 예측 시각화
+def visualize_model(model, num_images=6): # image 숫자가 양수여야 함
     was_training = model.training
     model.eval()
     images_so_far = 0
@@ -145,7 +153,8 @@ def visualize_model(model, num_images=6):
                     model.train(mode=was_training)
                     return
         model.train(mode=was_training)
-
+# run()을 정의한 이유는 freeze_support 런타임 에러가 발생.
+# torch.multiprocessing.freeze_support()를 작성해 주어야 정상 작동한다.
 def run():
     torch.multiprocessing.freeze_support()
     # 학습 데이터의 배치를 얻습니다.
@@ -184,12 +193,13 @@ def run():
     
     # 모델 저장
     torch.save(model_conv, 'fruits_model.pt')
-    torch.save(model_conv.state_dict(), 'fruits_model_state_dict.pt')
-    torch.save({
-        'epoch' : 25,
-        'model_state_dict' : model_conv.state_dict(),
-        'optimizer_state_dict' : optimizer_conv.state_dict(),
-        'loss': criterion
-    }, 'fruits_all.tar')
+    # torch.save(model_conv.state_dict(), 'fruits_model_state_dict.pt')
+    # torch.save({
+    #     'epoch' : 25,
+    #     'model_state_dict' : model_conv.state_dict(),
+    #     'optimizer_state_dict' : optimizer_conv.state_dict(),
+    #     'loss': criterion
+    # }, 'fruits_all.tar')
+    
 if __name__ == '__main__':
     run()
